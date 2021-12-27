@@ -31,7 +31,7 @@ export class LikeController {
     @Body() CreateLikeDto: CreateLikeDto,
     @Request() Req,
   ): Promise<LikeEntity> {
-    const user = await this.UserService.getById(Req.user.id);
+    const user = await this.UserService.getById(Req.user.userId);
     const post = await this.PostService.getById(CreateLikeDto.postId);
     return this.LikeService.like(post, user);
   }
@@ -41,7 +41,7 @@ export class LikeController {
     @Request() Req,
     @Body() CreateLikeDto: CreateLikeDto,
   ): Promise<any> {
-    const user = await this.UserService.getById(Req.user.id);
+    const user = await this.UserService.getById(Req.user.userId);
     return this.LikeService.dislike(user.id, CreateLikeDto.postId);
   }
 }
