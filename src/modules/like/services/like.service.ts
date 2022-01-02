@@ -48,7 +48,7 @@ export class LikeService {
       .where('like.user = :userId', { userId })
       .andWhere('like.post = :postId', { postId })
       .getOne();
-    await this.LikeRepository.delete(like);
+    await this.LikeRepository.remove(like);
     return 'Success';
   }
 }
