@@ -51,4 +51,17 @@ export class LikeService {
     await this.LikeRepository.remove(like);
     return 'Success';
   }
+
+  /**
+   * dislike
+   */
+  async findOne(userId: number, postId: number): Promise<LikeEntity> {
+    const like = await this.LikeRepository.createQueryBuilder('like')
+      .leftJoinAndSelect('like.user', 'user')
+      .leftJoinAndSelect('like.post', 'post')
+      .where('like.user = :userId', { userId })
+      .andWhere('like.post = :postId', { postId })
+      .getOne();
+    return like;
+  }
 }
