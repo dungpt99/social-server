@@ -21,13 +21,10 @@ export class LikeController {
     private readonly PostService: PostService,
   ) {}
 
-  @Get('/current')
-  async currentLike(
-    @Body() CreateLikeDto: CreateLikeDto,
-    @Request() Req,
-  ): Promise<LikeEntity> {
+  @Get('/current/:postId')
+  async currentLike(@Request() Req): Promise<LikeEntity> {
     const user = await this.UserService.getById(Req.user.userId);
-    return this.LikeService.findOne(user.id, CreateLikeDto.postId);
+    return this.LikeService.findOne(user.id, Req.params.postId);
   }
 
   @Get(':id')
