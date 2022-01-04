@@ -14,21 +14,28 @@ export class ConversationService {
   /**
    * Create
    */
-  async create(
-    senderId: UserEntity,
-    receiverId: UserEntity,
-  ): Promise<ConversationEntity> {
-    try {
-      const conversationModel = new ConversationEntity();
-      const newConversation = {
-        ...conversationModel,
-      };
-      newConversation.users = [senderId, receiverId];
-      return await this.ConversationRepository.save(newConversation);
-    } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException();
+  async create(senderId: UserEntity, receiverId: UserEntity): Promise<any> {
+    const conversation = await this.ConversationRepository.createQueryBuilder(
+      'conversation',
+    )
+      .leftJoinAndSelect('conversation.users', 'user')
+      .where('user.id =:id', { id: senderId.id })
+      .andWhere('user.id =:id', { id: receiverId.id })
+      .getMany();
+    if (conversation.length === 0) {
+      try {
+        const conversationModel = new ConversationEntity();
+        const newConversation = {
+          ...conversationModel,
+        };
+        newConversation.users = [senderId, receiverId];
+        return await this.ConversationRepository.save(newConversation);
+      } catch (error) {
+        console.log(error);
+        throw new InternalServerErrorException();
+      }
     }
+    return conversation;
   }
   /**
    * Get all conversation from user
