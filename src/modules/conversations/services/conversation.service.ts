@@ -15,14 +15,23 @@ export class ConversationService {
    * Create
    */
   async create(senderId: UserEntity, receiverId: UserEntity): Promise<any> {
-    const conversation = await this.ConversationRepository.createQueryBuilder(
-      'conversation',
-    )
-      .leftJoinAndSelect('conversation.users', 'user')
-      .where('user.id =:id', { id: senderId.id })
-      .andWhere('user.id =:id', { id: receiverId.id })
-      .getMany();
-    if (conversation.length === 0) {
+    const conversationSender = await this.getMany(senderId.id);
+    const conversationReceiver = await this.getMany(receiverId.id);
+    const conversationsSender = [];
+    const conversationsReceiver = [];
+    const conversationId = [];
+    conversationSender.forEach((e) => {
+      conversationsSender.push(e.id);
+    });
+    conversationReceiver.forEach((e) => {
+      conversationsReceiver.push(e.id);
+    });
+    conversationsSender.forEach((id) => {
+      if (conversationsReceiver.includes(id)) {
+        conversationId.push(id);
+      }
+    });
+    if (conversationId.length === 0) {
       try {
         const conversationModel = new ConversationEntity();
         const newConversation = {
@@ -34,8 +43,9 @@ export class ConversationService {
         console.log(error);
         throw new InternalServerErrorException();
       }
+    } else {
+      return this.getUser(conversationId[0]);
     }
-    return conversation;
   }
   /**
    * Get all conversation from user
