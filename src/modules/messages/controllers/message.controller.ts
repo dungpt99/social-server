@@ -23,7 +23,6 @@ export class MessageController {
   ): Promise<MessageEntity> {
     const conversation = await this.ConversationService.findOne(
       CreateMessageDto.receiverId,
-      Req.user.userId,
     );
     const user = await this.UserService.getById(Req.user.userId);
     return this.MessageService.create(CreateMessageDto, conversation, user);

@@ -74,17 +74,10 @@ export class ConversationService {
   /**
    * Get
    */
-  async findOne(
-    receiverId: number,
-    userId: number,
-  ): Promise<ConversationEntity> {
-    const conversation = await this.ConversationRepository.createQueryBuilder(
-      'conversation',
-    )
-      .leftJoinAndSelect('conversation.users', 'user')
-      .where('user.id =:id', { id: userId })
-      .andWhere('user.id =:id', { id: receiverId })
-      .getOne();
+  async findOne(conversationId: number): Promise<ConversationEntity> {
+    const conversation = await this.ConversationRepository.findOne({
+      where: { id: conversationId },
+    });
     return conversation;
   }
 }

@@ -25,10 +25,7 @@ export class ConversationController {
 
   @Get('/:receiverId')
   async findOne(@Request() Req): Promise<ConversationEntity> {
-    return this.ConversationService.findOne(
-      Req.params.receiverId,
-      Req.user.userId,
-    );
+    return this.ConversationService.findOne(Req.params.receiverId);
   }
 
   @Get('/user/:conversationId')
