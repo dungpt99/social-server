@@ -18,7 +18,7 @@ export class MessageService {
    * Create
    */
   async create(
-    content: CreateConversationDto,
+    content: string,
     conversation: ConversationEntity,
     user: UserEntity,
   ) {
@@ -26,8 +26,8 @@ export class MessageService {
       const messageModel = new MessageEntity();
       const newMessage = {
         ...messageModel,
-        ...content,
       };
+      newMessage.content = content;
       newMessage.conversation = conversation;
       newMessage.user = user;
       return await this.MessageRepository.save(newMessage);

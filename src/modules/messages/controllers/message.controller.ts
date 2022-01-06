@@ -16,16 +16,15 @@ export class MessageController {
   /**
    * Create
    */
-  @Post()
-  async create(
-    @Body() CreateMessageDto: CreateMessageDto,
-    @Request() Req,
-  ): Promise<MessageEntity> {
+  @Post(':conversationId')
+  async create(@Request() Req): Promise<MessageEntity> {
     const conversation = await this.ConversationService.findOne(
-      CreateMessageDto.receiverId,
+      Req.params.conversationId,
     );
+    console.log(conversation);
+
     const user = await this.UserService.getById(Req.user.userId);
-    return this.MessageService.create(CreateMessageDto, conversation, user);
+    return this.MessageService.create(Req.body.content, conversation, user);
   }
 
   @Get(':conversationReceiverId')
