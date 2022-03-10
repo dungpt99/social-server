@@ -1,5 +1,6 @@
-import { LikeEntity } from 'src/modules/like/entities/like.entity';
-import { UserEntity } from 'src/modules/user/entities/user.entity';
+import { LikeEntity } from "src/modules/like/entities/like.entity";
+import { UserEntity } from "src/modules/user/entities/user.entity";
+import { ImageEntity } from "../../images/entities/image.entity";
 import {
   Column,
   CreateDateColumn,
@@ -8,18 +9,18 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
+} from "typeorm";
 
-@Entity()
+@Entity({ name: "posts" })
 export class PostEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-  @Column('varchar', { length: 500 })
+  @Column({ name: "desc", type: "varchar", length: 500, default: null })
   desc: string;
 
-  @Column({ default: null })
-  img: string;
+  @OneToMany(() => ImageEntity, (image) => image.post)
+  images: ImageEntity[];
 
   @ManyToOne(() => UserEntity, (user) => user.posts)
   user: UserEntity;
@@ -27,9 +28,12 @@ export class PostEntity {
   @OneToMany(() => LikeEntity, (like) => like.post)
   likes: LikeEntity[];
 
-  @CreateDateColumn({ type: 'timestamp with time zone' })
+  @CreateDateColumn({ type: "timestamp with time zone" })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamp with time zone' })
+  @UpdateDateColumn({ type: "timestamp with time zone" })
   updatedAt: Date;
+
+  @Column({ name: "status", type: "boolean", default: true })
+  status: boolean;
 }

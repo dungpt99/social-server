@@ -1,41 +1,43 @@
-import { TokenEntity } from 'src/modules/Auth/entities/auth.entity';
-import { ConversationEntity } from 'src/modules/conversations/entities/conversation.entity';
-import { LikeEntity } from 'src/modules/like/entities/like.entity';
-import { MessageEntity } from 'src/modules/messages/entities/message.entity';
-import { PostEntity } from 'src/modules/post/entities/post.entity';
+import { TokenEntity } from "src/modules/auth/entities/auth.entity";
+import { ImageEntity } from "src/modules/images/entities/image.entity";
+import { LikeEntity } from "src/modules/like/entities/like.entity";
+import { MessageEntity } from "src/modules/messages/entities/message.entity";
+import { PostEntity } from "src/modules/post/entities/post.entity";
+import { RelationEntity } from "src/modules/relation/entities/relation.entity";
 import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
+} from "typeorm";
 
-@Entity()
+@Entity({ name: "users" })
 export class UserEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-  @Column('varchar', { length: 30 })
+  @Column({ name: "name", type: "varchar", length: 30 })
   name: string;
 
-  @Column('varchar', { length: 200, unique: true })
+  @Column({ name: "email", type: "varchar", length: 30, unique: true })
   email: string;
 
-  @Column()
+  @Column({ name: "password", type: "varchar", length: 200 })
   password: string;
 
-  @Column({ default: null })
-  avatar: string;
+  // @Column({ name: "avatar", type: "varchar", length: 200, default: null })
+  // avatar: string;
 
-  @Column({ default: null })
-  coverImage: string;
+  // @Column({ name: "coverImage", type: "varchar", length: 200, default: null })
+  // coverImage: string;
 
   @OneToMany(() => PostEntity, (post) => post.user)
   posts: PostEntity[];
+
+  @OneToMany(() => ImageEntity, (img) => img.user)
+  images: ImageEntity[];
 
   @OneToMany(() => LikeEntity, (like) => like.user)
   likes: LikeEntity[];
@@ -44,11 +46,17 @@ export class UserEntity {
   messages: MessageEntity[];
 
   @OneToMany(() => TokenEntity, (token) => token.user)
-  tokens: MessageEntity[];
+  tokens: TokenEntity[];
 
-  @CreateDateColumn({ type: 'timestamp with time zone' })
+  @OneToMany(() => RelationEntity, (relation) => relation.follow)
+  relations: RelationEntity[];
+
+  @CreateDateColumn({ type: "timestamp with time zone" })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamp with time zone' })
+  @UpdateDateColumn({ type: "timestamp with time zone" })
   updatedAt: Date;
+
+  @Column({ name: "status", type: "boolean", default: true })
+  status: boolean;
 }

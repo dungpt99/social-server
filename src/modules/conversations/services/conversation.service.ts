@@ -1,14 +1,14 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UserEntity } from 'src/modules/user/entities/user.entity';
-import { ConversationEntity } from '../entities/conversation.entity';
-import { ConversationRepository } from '../repositories/conversation.repository';
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { UserEntity } from "src/modules/user/entities/user.entity";
+import { ConversationEntity } from "../entities/conversation.entity";
+import { ConversationRepository } from "../repositories/conversation.repository";
 
 @Injectable()
 export class ConversationService {
   constructor(
     @InjectRepository(ConversationRepository)
-    private readonly ConversationRepository: ConversationRepository,
+    private readonly ConversationRepository: ConversationRepository
   ) {}
 
   /**
@@ -50,12 +50,12 @@ export class ConversationService {
   /**
    * Get all conversation from user
    */
-  async getMany(userId: number): Promise<ConversationEntity[]> {
+  async getMany(userId: string): Promise<ConversationEntity[]> {
     const conversations = await this.ConversationRepository.createQueryBuilder(
-      'conversation',
+      "conversation"
     )
-      .leftJoinAndSelect('conversation.users', 'user')
-      .where('user.id = :id', { id: userId })
+      .leftJoinAndSelect("conversation.users", "user")
+      .where("user.id = :id", { id: userId })
       .getMany();
     return conversations;
   }
@@ -65,7 +65,7 @@ export class ConversationService {
    */
   async getUser(conversationId: number): Promise<any> {
     const conversations = await this.ConversationRepository.find({
-      relations: ['users'],
+      relations: ["users"],
       where: { id: conversationId },
     });
     return conversations;

@@ -20,7 +20,7 @@ export class MessageEntity {
   @ManyToOne(() => UserEntity, (user) => user.messages)
   user: UserEntity;
 
-  @Column({ length: 500 })
+  @Column({ name:"content",type:"varchar",length: 500 })
   content: string;
 
   @CreateDateColumn({ type: 'timestamp with time zone' })

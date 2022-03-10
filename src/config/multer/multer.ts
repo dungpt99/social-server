@@ -1,17 +1,15 @@
-import { Injectable, Req } from '@nestjs/common';
-import {
-  MulterModuleOptions,
-  MulterOptionsFactory,
-} from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { Injectable } from "@nestjs/common";
+import { MulterOptionsFactory } from "@nestjs/platform-express";
+import { MulterOptions } from "@nestjs/platform-express/multer/interfaces/multer-options.interface";
+import { diskStorage } from "multer";
 
 @Injectable()
 export class MulterConfigService implements MulterOptionsFactory {
-  createMulterOptions(): MulterModuleOptions {
+  createMulterOptions(): MulterOptions {
     return {
       storage: diskStorage({
         destination: function (req, file, cb) {
-          cb(null, './public/uploads');
+          cb(null, "./public/uploads");
         },
         filename: (req, file, cb) => {
           cb(null, Date.now() + file.originalname);
@@ -19,5 +17,4 @@ export class MulterConfigService implements MulterOptionsFactory {
       }),
     };
   }
-  use(req, res, next: Function) {}
 }
