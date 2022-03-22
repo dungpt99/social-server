@@ -1,40 +1,40 @@
-import { Body, Controller, Get, Post, Request } from "@nestjs/common";
-import { UserService } from "src/modules/user/services/user.service";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Request,
+} from "@nestjs/common";
 import { CreateConversationDto } from "../dto/create-conversation.dto";
 import { ConversationEntity } from "../entities/conversation.entity";
 import { ConversationService } from "../services/conversation.service";
 
-@Controller("conversation")
+@Controller("conversations")
 export class ConversationController {
-  constructor(
-    private readonly ConversationService: ConversationService,
-    private readonly UserService: UserService
-  ) {}
+  constructor(private readonly conversationService: ConversationService) {}
 
   @Post()
   async create(
-    @Body() CreateConversationDto: CreateConversationDto,
+    @Body() createConversationDto: CreateConversationDto,
     @Request() Req
   ): Promise<ConversationEntity> {
-    const sender = await this.UserService.findById(Req.user.userId);
-    const receiver = await this.UserService.findById(
-      CreateConversationDto.receiverId
+    return this.conversationService.create(
+      Req.user.userId,
+      createConversationDto
     );
-    return this.ConversationService.create(sender, receiver);
-  }
-
-  @Get("/:conversationId")
-  async findOne(@Request() Req): Promise<ConversationEntity> {
-    return this.ConversationService.findOne(Req.params.conversationId);
-  }
-
-  @Get("/user/:conversationId")
-  async findUser(@Request() Req): Promise<ConversationEntity> {
-    return this.ConversationService.getUser(Req.params.conversationId);
   }
 
   @Get()
   async getMany(@Request() Req): Promise<ConversationEntity[]> {
-    return this.ConversationService.getMany(Req.user.userId);
+    return this.conversationService.findAll(Req.user.userId);
+  }
+
+  @Get("/:id")
+  async findOne(
+    @Param("id", ParseUUIDPipe) id: string
+  ): Promise<ConversationEntity> {
+    return this.conversationService.findById(id);
   }
 }

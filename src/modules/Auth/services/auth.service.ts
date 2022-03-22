@@ -59,7 +59,7 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = { email: user.email, sub: user.id };
+    const payload = { name: user.name, email: user.email };
     const { accessToken, refreshToken } = await this.getToken(payload);
     try {
       const tokenModel = new TokenEntity();
@@ -70,7 +70,7 @@ export class AuthService {
       this.logger.log(error);
       throw new InternalServerErrorException();
     }
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, user: payload };
   }
 
   async refreshToken(userId: string) {
