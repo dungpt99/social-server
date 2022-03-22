@@ -1,7 +1,7 @@
 export function commonFilter(imgArr, owner, ownerName: string) {
-  if (ownerName === "category") {
+  if (ownerName === "message") {
     return imgArr.map((e) => {
-      return { url: e.filename, category: owner, type: ownerName };
+      return { url: e.filename, message: owner, type: ownerName };
     });
   }
   if (ownerName === "post") {

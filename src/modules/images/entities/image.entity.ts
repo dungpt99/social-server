@@ -1,3 +1,4 @@
+import { MessageEntity } from "src/modules/messages/entities/message.entity";
 import { PostEntity } from "src/modules/post/entities/post.entity";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { UserEntity } from "../../user/entities/user.entity";
@@ -18,4 +19,9 @@ export class ImageEntity {
 
   @ManyToOne(() => PostEntity, (post) => post.images, { onDelete: "CASCADE" })
   post: PostEntity;
+
+  @ManyToOne(() => MessageEntity, (message) => message.images, {
+    onDelete: "CASCADE",
+  })
+  message: MessageEntity;
 }
