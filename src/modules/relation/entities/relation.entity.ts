@@ -1,4 +1,4 @@
-import { UserEntity } from 'src/modules/user/entities/user.entity';
+import { UserEntity } from "src/modules/user/entities/user.entity";
 import {
   Column,
   CreateDateColumn,
@@ -6,19 +6,22 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-} from 'typeorm';
+} from "typeorm";
 
-@Entity()
+@Entity({ name: "relations" })
 export class RelationEntity {
-  @ManyToOne(() => UserEntity, (user) => user.id)
-  user: UserEntity;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-  @Column({ primary: true })
-  follow: number;
+  @ManyToOne(() => UserEntity, (user) => user.relations)
+  follow: UserEntity;
 
-  @CreateDateColumn({ type: 'timestamp with time zone' })
+  @Column({ name: "userId", type: "varchar" })
+  userId: string;
+
+  @CreateDateColumn({ type: "timestamp with time zone" })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamp with time zone' })
+  @UpdateDateColumn({ type: "timestamp with time zone" })
   updatedAt: Date;
 }

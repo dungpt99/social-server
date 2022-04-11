@@ -1,52 +1,67 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CreateConversationDto } from 'src/modules/conversations/dto/create-conversation.dto';
-import { ConversationEntity } from 'src/modules/conversations/entities/conversation.entity';
-import { UserEntity } from 'src/modules/user/entities/user.entity';
-import { CreateMessageDto } from '../dto/create-message.dto';
-import { MessageEntity } from '../entities/message.entity';
-import { MessageRepository } from '../repositories/message.repository';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { commonDelete } from "src/common/helper/common-delete";
+import { commonFilter } from "src/common/helper/common-filter";
+import { ConversationService } from "src/modules/conversations/services/conversation.service";
+import { ImagesService } from "src/modules/images/services/images.services";
+import { UserEntity } from "src/modules/user/entities/user.entity";
+import { UserService } from "src/modules/user/services/user.service";
+import { CreateMessageDto } from "../dto/create-message.dto";
+import { MessageEntity } from "../entities/message.entity";
+import { MessageRepository } from "../repositories/message.repository";
 
 @Injectable()
 export class MessageService {
+  private readonly logger = new Logger();
   constructor(
     @InjectRepository(MessageRepository)
-    private readonly MessageRepository: MessageRepository,
+    private readonly messageRepository: MessageRepository,
+    private readonly conversationService: ConversationService,
+    private readonly userService: UserService,
+    private readonly imageService: ImagesService
   ) {}
 
-  /**
-   * Create
-   */
   async create(
-    content: CreateConversationDto,
-    conversation: ConversationEntity,
-    user: UserEntity,
-  ) {
+    createMessageDto: CreateMessageDto,
+    userId: string,
+    imgArray: Array<any>
+  ): Promise<MessageEntity> {
+    const conversation = await this.conversationService.findById(
+      createMessageDto.conversationId
+    );
+    const user = await this.userService.findById(userId);
+    const messageModel = new MessageEntity();
+    const newMessage = {
+      ...messageModel,
+      conversation,
+      user,
+    };
+    newMessage.content = createMessageDto.content;
     try {
-      const messageModel = new MessageEntity();
-      const newMessage = {
-        ...messageModel,
-        ...content,
-      };
-      newMessage.conversation = conversation;
-      newMessage.user = user;
-      return await this.MessageRepository.save(newMessage);
+      const message = await this.messageRepository.save(newMessage);
+      if (imgArray.length !== 0) {
+        const arr = commonFilter(imgArray, message, "message");
+        await this.imageService.create(arr);
+      }
+
+      return message;
     } catch (error) {
-      console.log(error);
+      commonDelete(imgArray);
+      this.logger.log(error);
+      throw new InternalServerErrorException();
     }
   }
 
-  /**
-   * Get by receiverId
-   */
-  async getMany(conversationReceiverId: number): Promise<MessageEntity[]> {
-    const messages = await this.MessageRepository.createQueryBuilder('message')
-      .leftJoinAndSelect('message.conversation', 'conversation')
-      .leftJoinAndSelect('message.user', 'user')
-      .where('message.conversation = :conversationReceiverId', {
-        conversationReceiverId,
-      })
+  async findAll(conversationId: string): Promise<MessageEntity[]> {
+    return await this.messageRepository
+      .createQueryBuilder("message")
+      .leftJoinAndSelect("message.conversation", "conversation")
+      .leftJoinAndSelect("message.images", "images")
+      .where("conversation.id = :id", { id: conversationId })
       .getMany();
-    return messages;
   }
 }

@@ -1,36 +1,35 @@
-import { Body, Controller, Get, Param, Post, Request } from '@nestjs/common';
-import { ConversationService } from 'src/modules/conversations/services/conversation.service';
-import { UserService } from 'src/modules/user/services/user.service';
-import { CreateMessageDto } from '../dto/create-message.dto';
-import { MessageEntity } from '../entities/message.entity';
-import { MessageService } from '../services/message.service';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Request,
+  UploadedFiles,
+  UseInterceptors,
+} from "@nestjs/common";
+import { FilesInterceptor } from "@nestjs/platform-express";
+import { CreateMessageDto } from "../dto/create-message.dto";
+import { MessageEntity } from "../entities/message.entity";
+import { MessageService } from "../services/message.service";
 
-@Controller('messages')
+@Controller("messages")
 export class MessageController {
-  constructor(
-    private readonly MessageService: MessageService,
-    private readonly ConversationService: ConversationService,
-    private readonly UserService: UserService,
-  ) {}
+  constructor(private readonly messageService: MessageService) {}
 
-  /**
-   * Create
-   */
-  @Post()
+  @Post("")
+  @UseInterceptors(FilesInterceptor("files"))
   async create(
-    @Body() CreateMessageDto: CreateMessageDto,
     @Request() Req,
+    @Body() body: CreateMessageDto,
+    @UploadedFiles() files: Array<Express.Multer.File>
   ): Promise<MessageEntity> {
-    const conversation = await this.ConversationService.findOne(
-      CreateMessageDto.receiverId,
-      Req.user.userId,
-    );
-    const user = await this.UserService.getById(Req.user.userId);
-    return this.MessageService.create(CreateMessageDto, conversation, user);
+    return this.messageService.create(body, Req.user.userId, files);
   }
 
-  @Get(':conversationReceiverId')
-  async getMessages(@Request() Req): Promise<MessageEntity[]> {
-    return this.MessageService.getMany(Req.params.conversationReceiverId);
+  @Get("/:id")
+  async findAll(@Param("id", ParseUUIDPipe) id: string) {
+    return this.messageService.findAll(id);
   }
 }
