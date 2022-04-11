@@ -4,44 +4,44 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
   Request,
-} from '@nestjs/common';
-import { PostService } from 'src/modules/post/services/post.service';
-import { UserService } from 'src/modules/user/services/user.service';
-import { CreateLikeDto } from '../dto/create.dto';
-import { LikeEntity } from '../entities/like.entity';
-import { LikeService } from '../services/like.service';
+} from "@nestjs/common";
+import { CreateLikeDto } from "../dto/create.dto";
+import { LikeEntity } from "../entities/like.entity";
+import { LikeService } from "../services/like.service";
 
-@Controller('/like')
+@Controller("/like")
 export class LikeController {
-  constructor(
-    private readonly LikeService: LikeService,
-    private readonly UserService: UserService,
-    private readonly PostService: PostService,
-  ) {}
+  constructor(private readonly likeService: LikeService) {}
 
-  @Get(':id')
+  @Get("/current/:postId")
+  async currentLike(
+    @Request() Req,
+    @Param("id", ParseUUIDPipe) id: string
+  ): Promise<LikeEntity> {
+    return this.likeService.findOne(Req.user.userId, id);
+  }
+
+  @Get(":id")
   async totalLike(@Request() Req): Promise<any> {
-    return this.LikeService.totalLike(Req.params.id);
+    return this.likeService.totalLike(Req.params.id);
   }
 
   @Post()
   async like(
-    @Body() CreateLikeDto: CreateLikeDto,
-    @Request() Req,
-  ): Promise<LikeEntity> {
-    const user = await this.UserService.getById(Req.user.id);
-    const post = await this.PostService.getById(CreateLikeDto.postId);
-    return this.LikeService.like(post, user);
+    @Body() createLikeDto: CreateLikeDto,
+    @Request() Req
+  ): Promise<any> {
+    return this.likeService.like(createLikeDto, Req.user.userId);
   }
 
   @Delete()
   async disLike(
     @Request() Req,
-    @Body() CreateLikeDto: CreateLikeDto,
+    @Body() createLikeDto: CreateLikeDto
   ): Promise<any> {
-    const user = await this.UserService.getById(Req.user.id);
-    return this.LikeService.dislike(user.id, CreateLikeDto.postId);
+    return this.likeService.dislike(Req.user.userId, createLikeDto.postId);
   }
 }

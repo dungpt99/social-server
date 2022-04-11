@@ -4,108 +4,75 @@ import {
   Delete,
   Get,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
+  Query,
+  Req,
   Request,
-  UploadedFile,
+  UploadedFiles,
   UseInterceptors,
-} from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { Public } from 'src/modules/Auth/enableAuthPublic';
-import { UserService } from 'src/modules/user/services/user.service';
-import { CreatePostDto } from '../dto/create-post.dto';
-import { PostEntity } from '../entities/post.entity';
-import { PostService } from '../services/post.service';
-import { diskStorage } from 'multer';
-import { RelationService } from 'src/modules/relation/services/relation.service';
+} from "@nestjs/common";
+import { FilesInterceptor } from "@nestjs/platform-express";
+import { CreatePostDto } from "../dto/create-post.dto";
+import { PostEntity } from "../entities/post.entity";
+import { PostService } from "../services/post.service";
+import { ApiConsumes } from "@nestjs/swagger";
+import { ResponsePagination } from "src/common/dto/response-pagination.dto";
+import { GetPostsDto } from "../dto/list-post.dto";
+import { UpdatePostDto } from "../dto/update-post.dto";
 
-@Controller('post')
+@Controller("posts")
 export class PostController {
-  constructor(
-    private readonly PostService: PostService,
-    private readonly UserService: UserService,
-    private readonly RelationService: RelationService,
-  ) {}
+  constructor(private readonly postService: PostService) {}
 
-  @Post('/uploads')
-  @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(
-    @UploadedFile() file: Express.Multer.File,
-    @Request() Req,
-    @Body() CreatePostDto: CreatePostDto,
+  @Post("")
+  @ApiConsumes("multipart/form-data")
+  @UseInterceptors(FilesInterceptor("files"))
+  public async create(
+    @Body() createPostDto: CreatePostDto,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+    @Req() req
   ): Promise<PostEntity> {
-    const imgDest = file.path.substr(6);
-    console.log(file);
-    console.log(CreatePostDto);
-    const user = await this.UserService.find(Req.user);
-    const post = await this.PostService.createWithFile(
-      CreatePostDto,
-      user,
-      imgDest,
-    );
-    return post;
-  }
-
-  @Post()
-  async create(
-    @Body() CreatePostDto: CreatePostDto,
-    @Request() Req,
-  ): Promise<PostEntity> {
-    console.log(Req.user);
-    const user = await this.UserService.find(Req.user);
-    const post = await this.PostService.create(CreatePostDto, user);
-    return post;
+    return await this.postService.create(createPostDto, files, req.user.userId);
   }
 
   @Get()
-  async getAll(): Promise<PostEntity[]> {
-    return this.PostService.getPosts();
+  public async findAll(
+    @Query() getPostsDto: GetPostsDto
+  ): Promise<ResponsePagination<PostEntity>> {
+    return await this.postService.findAll(getPostsDto);
   }
 
-  @Get('/profile/:id')
-  async getByUser(@Param('id') id: number): Promise<PostEntity[]> {
-    return this.PostService.getByUser(id);
+  @Get("/profile")
+  async getByUser(@Request() Req): Promise<PostEntity[]> {
+    return this.postService.profile(Req.user.userId);
   }
 
-  @Get('/timeline')
-  async getTimeline(@Request() Req): Promise<any> {
-    const friend = await this.RelationService.getFriend(Req.user.userId);
-    const x = [];
-    const friendPost = await Promise.all(
-      friend.map((friend) => {
-        return this.PostService.getByUser(friend.follow);
-      }),
-    );
-    const userPost = await this.PostService.getByUser(Req.user.userId);
-    userPost.forEach((e) => {
-      x.push(e);
-    });
-    friendPost.forEach((e) => {
-      if (e.length !== 0) {
-        e.forEach((element) => {
-          x.push(element);
-        });
-      }
-    });
-
-    return x;
+  @Get("/timeline")
+  public async getTimeline(@Request() Req): Promise<any> {
+    return this.postService.getTimeline(Req.user.userId);
   }
 
-  @Get(':id')
-  async getById(@Param() id: number): Promise<PostEntity> {
-    return this.PostService.getById(id);
+  @Get("/:id")
+  public async findOne(
+    @Param("id", ParseUUIDPipe) id: string
+  ): Promise<PostEntity> {
+    return await this.postService.findById(id);
   }
 
-  @Put(':id')
+  @Put(":id")
+  @UseInterceptors(FilesInterceptor("files"))
   async update(
-    @Body() CreatePostDto: CreatePostDto,
-    @Param() id: number,
-  ): Promise<string> {
-    return this.PostService.update(CreatePostDto, id);
+    @Body() updatePostDto: UpdatePostDto,
+    @Param("id", ParseUUIDPipe) id: string,
+    @UploadedFiles() files: Array<Express.Multer.File>
+  ): Promise<PostEntity> {
+    return this.postService.update(id, updatePostDto, files);
   }
 
-  @Delete(':id')
-  async delete(@Param() id: number) {
-    return this.PostService.delete(id);
+  @Delete(":id")
+  async delete(@Param("id", ParseUUIDPipe) id: string) {
+    return this.postService.delete(id);
   }
 }
