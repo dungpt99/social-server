@@ -13,6 +13,6 @@ export class atStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    return { userId: payload.sub, email: payload.email, name: payload.name };
+    return { userId: payload.id, email: payload.email, name: payload.name };
   }
 }

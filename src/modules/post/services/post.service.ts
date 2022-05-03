@@ -108,6 +108,7 @@ export class PostService {
       .where("post.user = :userId", {
         userId,
       })
+      .andWhere("post.status = :status", { status: true })
       .orderBy("post.createdAt", "DESC")
       .getMany();
   }

@@ -9,6 +9,7 @@ import { AuthRepository } from "../repository/auth.repository";
 import * as bcrypt from "bcrypt";
 import { UserService } from "src/modules/user/services/user.service";
 import { JwtService } from "@nestjs/jwt";
+import { UserEntity } from "src/modules/user/entities/user.entity";
 
 @Injectable()
 export class AuthService {
@@ -58,8 +59,8 @@ export class AuthService {
     return null;
   }
 
-  async login(user: any) {
-    const payload = { name: user.name, email: user.email };
+  async login(user: UserEntity) {
+    const payload = { id: user.id, name: user.name, email: user.email };
     const { accessToken, refreshToken } = await this.getToken(payload);
     try {
       const tokenModel = new TokenEntity();
@@ -70,7 +71,7 @@ export class AuthService {
       this.logger.log(error);
       throw new InternalServerErrorException();
     }
-    return { accessToken, refreshToken, user: payload };
+    return { accessToken, refreshToken, user };
   }
 
   async refreshToken(userId: string) {

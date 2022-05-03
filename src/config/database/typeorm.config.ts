@@ -9,8 +9,5 @@ export const typeOrmConfig: TypeOrmModule = {
   database: databaseConfig.database,
   entities: [`${__dirname}/../../**/*.entity.{js,ts}`],
   synchronize: true,
-<<<<<<< HEAD
-=======
   ssl: { rejectUnauthorized: false }
->>>>>>> 4c593b10e0e07854926e64bc5b7e22dfb199c91f
 };
